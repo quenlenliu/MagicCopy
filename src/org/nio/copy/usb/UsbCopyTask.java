@@ -2,22 +2,22 @@ package org.nio.copy.usb;
 
 import java.io.File;
 
-public class UsbCopyTask extends DirCopyTask {
+class UsbCopyTask extends DirCopyTask {
 
-    private ICopyListener mListener;
+    private IListener mListener;
 
-    public UsbCopyTask(File source, File dest) {
-        super(null, source, dest);
+    public UsbCopyTask(File source, File dest, TaskSchedule schedule) {
+        super(source, dest, schedule);
     }
 
-    public void setListener(ICopyListener mListener) {
+    public void setListener(IListener mListener) {
         this.mListener = mListener;
     }
 
     @Override
     protected void onStartExecute() {
         super.onStartExecute();
-        final ICopyListener listener = mListener;
+        final IListener listener = mListener;
         if (listener != null) {
             listener.onStart();
         }
@@ -26,7 +26,7 @@ public class UsbCopyTask extends DirCopyTask {
     @Override
     protected void onUpdateProgress(long cur, long total) {
         super.onUpdateProgress(cur, total);
-        final ICopyListener listener = mListener;
+        final IListener listener = mListener;
         if (listener != null) {
             listener.onProgress(cur, total);
         }
@@ -36,14 +36,19 @@ public class UsbCopyTask extends DirCopyTask {
     protected void onCompleteExecute(int state) {
         super.onCompleteExecute(state);
         if (state == FLAG_STATE_COMPLETE) {
-            final ICopyListener listener = mListener;
+            final IListener listener = mListener;
             if (listener != null) {
                 listener.onComplete();
             }
         } else if (state == FLAG_STATE_ERROR) {
-            final ICopyListener listener = mListener;
+            final IListener listener = mListener;
             if (listener != null) {
                 listener.onError();
+            }
+        } else if (state == FLAG_STATE_CANCEL) {
+            final IListener listener = mListener;
+            if (listener != null) {
+                listener.onCancel();
             }
         }
     }

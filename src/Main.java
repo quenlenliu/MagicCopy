@@ -1,5 +1,6 @@
-import org.nio.copy.usb.ICopyListener;
-import org.nio.copy.usb.UsbCopyTask;
+import org.nio.copy.usb.CopyService;
+import org.nio.copy.usb.IListener;
+import org.nio.copy.usb.ITask;
 
 import java.io.File;
 
@@ -21,40 +22,54 @@ public class Main {
 
     public static Runnable getRunnable(final File src, final File dest) {
         return () -> {
-            UsbCopyTask task = new UsbCopyTask(src, dest);
-            task.setListener(new ICopyListener() {
-                @Override
-                public void onStart() {
-                    mStartTime = System.currentTimeMillis();
-                    System.out.println("onStart");
-                }
+            ITask task = CopyService.createTask(src, dest, 4,
+                    new IListener() {
+                        @Override
+                        public void onStart() {
+                            mStartTime = System.currentTimeMillis();
+                            System.out.println("onStart");
+                        }
 
-                @Override
-                public void onComplete() {
-                    System.out.println("onComplete");
-                    mCompleteTime = System.currentTimeMillis();
-                    System.out.println("Cost time: " + (mCompleteTime - mStartTime));
-                }
+                        @Override
+                        public void onComplete() {
+                            System.out.println("onComplete");
+                            mCompleteTime = System.currentTimeMillis();
+                            System.out.println("Cost time: " + (mCompleteTime - mStartTime));
+                        }
 
-                @Override
-                public void onError() {
-                    System.out.println("onError");
-                }
+                        @Override
+                        public void onError() {
+                            System.out.println("onError");
+                        }
 
-                @Override
-                public void onProgress(long cur, long total) {
-                    System.out.println("onProgress: total = " + total + " \tcur = " + cur);
-                }
+                        @Override
+                        public void onCancel() {
+                            System.out.println("onCancel");
+                        }
 
-            });
+                        @Override
+                        public void onProgress(long cur, long total) {
+                            System.out.println("onProgress: total = " + total + " \tcur = " + cur);
+                        }
+                    }
+            );
 
             mStartTime = System.currentTimeMillis();
-            System.out.println("Start: ");
+            System.out.println("Start: get task load");
             long taskLoad = task.getTaskLoad();
-            System.out.println(task.printAllTask());
             mCompleteTime = System.currentTimeMillis();
-            System.out.println("Total time: " + (mCompleteTime - mStartTime) + " \tTask Load: " + taskLoad);
+            System.out.println("End get task load: Total time: " + (mCompleteTime - mStartTime) + " \tTask Load: " + taskLoad);
             task.execute();
+
+            try {
+                System.out.println("Wait to cancel!!");
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Start Cancel");
+            task.cancel();
+            System.out.println("End cancel!!");
         };
     }
 }

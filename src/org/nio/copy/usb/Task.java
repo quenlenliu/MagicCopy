@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Define a base task.
  */
-public abstract class Task implements ITask{
+abstract class Task implements ITask{
 
     private int mState = FLAG_STATE_IDLE;
 
@@ -21,11 +21,15 @@ public abstract class Task implements ITask{
     }
 
     public void execute() {
-        setState(FLAG_STATE_EXECUTING);
-        onStartExecute();
         if (!isCancel()) {
+            setState(FLAG_STATE_EXECUTING);
+            onStartExecute();
             int flag = onExecute();
-            onCompleteExecute(flag);
+            if (flag == FLAG_STATE_COMPLETE) {
+                onCompleteExecute(FLAG_STATE_COMPLETE);
+            } else if (flag == FLAG_STATE_ERROR) {
+                onCompleteExecute(FLAG_STATE_ERROR);
+            }
         } else {
             onCompleteExecute(FLAG_STATE_CANCEL);
         }
@@ -67,8 +71,9 @@ public abstract class Task implements ITask{
 
     protected void onCompleteExecute(@FlagState int state) {
         setState(state);
-        if (mParent != null) {
-            mParent.onChildTaskComplete(this, state);
+        final ParentTask parentTask = getParent();
+        if (parentTask != null) {
+            parentTask.onChildTaskComplete(this, state);
         }
     }
 
@@ -81,12 +86,14 @@ public abstract class Task implements ITask{
     private Object mLock = new Object();
     protected void notifyNewProgress(long progress) {
         synchronized (mLock) {
-            final ParentTask parentTask = mParent;
-            if (parentTask != null && getChildren() == null) {
-                parentTask.onChildTaskUpdateProgress(this, progress);
+            if (progress != 0) { // First time and progress changed, send notify.
+                final ParentTask parentTask = getParent();
+                if (parentTask != null) {
+                    parentTask.onChildTaskUpdateProgress(this, progress);
+                }
+                mCurrentProgress += progress;
+                updateProgress(mCurrentProgress, getTaskLoad());
             }
-            mCurrentProgress += progress;
-            updateProgress(mCurrentProgress, getTaskLoad());
         }
     }
 
@@ -122,12 +129,20 @@ public abstract class Task implements ITask{
         return mState == FLAG_STATE_CANCEL;
     }
 
-    public final void cancel() {
+    public void cancel() {
         if (mState == FLAG_STATE_CANCEL) {
             throw new RuntimeException("Task has been canceled, can cancel again!!!");
         }
-        mState = FLAG_STATE_CANCEL;
-        onCanceled();
-    }
 
+        if (getChildren() != null) {
+            for (ITask task: getChildren()) {
+                task.cancel();
+            }
+        }
+
+        onCanceled();
+        if (mState != FLAG_STATE_COMPLETE && mState != FLAG_STATE_ERROR) {
+            onCompleteExecute(FLAG_STATE_CANCEL);
+        }
+    }
 }

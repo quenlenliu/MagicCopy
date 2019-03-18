@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-public final class FileCopyTask extends Task {
+final class FileCopyTask extends Task {
     private File mSource;
     private File mTarget;
     private File mTemp;

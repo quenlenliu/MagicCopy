@@ -5,14 +5,22 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class DirCopyTask extends AsyncTask implements ParentTask{
+class DirCopyTask extends Task implements ParentTask{
 
     private File mSource;
     private File mTarget;
     private long mTaskLoad = -1;
+    private TaskSchedule mSchedule;
 
     public DirCopyTask(ParentTask parent, File source, File dest) {
         super(parent);
+        mSchedule = parent.getSchedule();
+        init(source, dest);
+    }
+
+    public DirCopyTask(File source, File dest, TaskSchedule schedule) {
+        super(null);
+        mSchedule = schedule;
         init(source, dest);
     }
 
@@ -51,14 +59,12 @@ public class DirCopyTask extends AsyncTask implements ParentTask{
         return mChildren;
     }
 
-    private static final String TAG = "DirCopyTask";
-
     @Override
     public final void onChildTaskComplete(ITask child, int flagState) {
         //System.out.println(TAG + ": onChildTaskComplete: " + child.getName() + " TaskLoad: " + child.getTaskLoad() + " state: " + flagState);
         if (flagState == FLAG_STATE_ERROR && EXECUTE_MODE_STRICT == getExecuteMode()) {
             for (ITask task: getChildren()) {
-                TaskSchedule.cancel(task);
+               task.cancel();
             }
             setState(FLAG_STATE_ERROR);
             onCompleteExecute(FLAG_STATE_ERROR);
@@ -70,10 +76,11 @@ public class DirCopyTask extends AsyncTask implements ParentTask{
         return EXECUTE_MODE_STRICT;
     }
 
-    @Override
-    protected void onCompleteExecute(int state) {
-        super.onCompleteExecute(state);
+    public void cancel() {
+        super.cancel();
+        getSchedule().cancel();
     }
+
 
     @Override
     public final synchronized long getTaskLoad() {
@@ -93,17 +100,14 @@ public class DirCopyTask extends AsyncTask implements ParentTask{
             return FLAG_STATE_COMPLETE;
         } else {
             for (ITask child: mChildren) {
-                TaskSchedule.execute(child);
+                getSchedule().execute(child);
             }
         }
         return FLAG_STATE_EXECUTING;
     }
 
     @Override
-    protected final void onCanceled() {
-        super.onCanceled();
-        for (ITask task: mChildren) {
-            TaskSchedule.cancel(task);
-        }
+    public TaskSchedule getSchedule() {
+        return mSchedule;
     }
 }

@@ -1,6 +1,6 @@
 package org.nio.copy.usb;
 
-public interface ParentTask {
+interface ParentTask {
 
     int EXECUTE_MODE_STRICT = 0;
     int EXECUTE_MODE_NON_STRICT = 1;
@@ -21,4 +21,6 @@ public interface ParentTask {
      * @return
      */
     int getExecuteMode();
+
+    TaskSchedule getSchedule();
 }
