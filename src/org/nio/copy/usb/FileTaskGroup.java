@@ -5,32 +5,32 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-class DirCopyTask extends Task implements ParentTask{
+class FileTaskGroup extends Task implements ParentTask{
 
     private File mSource;
     private File mTarget;
     private long mTaskLoad = -1;
     private TaskSchedule mSchedule;
 
-    public DirCopyTask(ParentTask parent, File source, File dest) {
+    public FileTaskGroup(ParentTask parent, File source, File dest) {
         super(parent);
         mSchedule = parent.getSchedule();
         init(source, dest);
     }
 
-    public DirCopyTask(File source, File dest, TaskSchedule schedule) {
+    public FileTaskGroup(File source, File dest, TaskSchedule schedule) {
         super(null);
         mSchedule = schedule;
         init(source, dest);
     }
 
     @Override
-    public final void onChildTaskUpdateProgress(ITask child, long progress) {
+    public final void onChildTaskUpdateProgress(Task child, long progress) {
         notifyNewProgress(progress);
     }
 
     @Override
-    public String getName() {
+    public String toString() {
         return mSource.getName();
     }
 
@@ -44,9 +44,9 @@ class DirCopyTask extends Task implements ParentTask{
         for (File child: children) {
             ITask subTask;
             if (child.isDirectory()) {
-                subTask = new DirCopyTask(this, child, new File(mTarget + File.separator + child.getName()));
+                subTask = new FileTaskGroup(this, child, new File(mTarget + File.separator + child.getName()));
             } else {
-                subTask = new FileCopyTask(this, child, new File(mTarget + File.separator + child.getName()));
+                subTask = new FileTask(this, child, new File(mTarget + File.separator + child.getName()));
             }
             mChildren.add(subTask);
         }
@@ -60,25 +60,32 @@ class DirCopyTask extends Task implements ParentTask{
     }
 
     @Override
-    public final void onChildTaskComplete(ITask child, int flagState) {
-        //System.out.println(TAG + ": onChildTaskComplete: " + child.getName() + " TaskLoad: " + child.getTaskLoad() + " state: " + flagState);
-        if (flagState == FLAG_STATE_ERROR && EXECUTE_MODE_STRICT == getExecuteMode()) {
-            for (ITask task: getChildren()) {
-               task.cancel();
+    public final void onChildTaskComplete(Task child, int flagState) {
+        /*
+         * check the execute mode is strict mode and has a children task not execute success.
+         * Cancel all  task.
+         */
+        if (flagState == FLAG_STATE_ERROR) {
+            if (EXECUTE_MODE_STRICT == getExecuteMode()
+                && FLAG_STATE_EXECUTING == getState()) {
+                setState(flagState);
+                cancelChildren();
+                getSchedule().shutdown();
+            } else {
+                child.ignoreRemainingTask(); // ignore remaining task.
+                System.out.println("Task(" + child.getName()+") execute occur error, but execute mode is non strict, ignore it ");
             }
-            setState(FLAG_STATE_ERROR);
-            onCompleteExecute(FLAG_STATE_ERROR);
         }
     }
 
+
     @Override
     public int getExecuteMode() {
-        return EXECUTE_MODE_STRICT;
+        return EXECUTE_MODE_NON_STRICT;
     }
 
     public void cancel() {
         super.cancel();
-        getSchedule().cancel();
     }
 
 

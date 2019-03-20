@@ -10,19 +10,19 @@ public class Main {
     //public static final String SRC_PATH = "/home/quenlen/Test/src_one";
     //public static final String SRC_PATH = "/home/quenlen/Test/src";
     //public static final String SRC_PATH = "/home/quenlen/Downloads";
-    public static final String SRC_PATH = "/home/quenlen/Android/Sdk";
-    public static final String DEST_PATH  = "/home/quenlen/Test/dest";
+    //public static final String SRC_PATH = "/home/quenlen/Android/Sdk";
+    public static final String SRC_PATH = "/Users/alex.liu/Downloads/Work/Log/NDMS-1218";
+    public static final String DEST_PATH  = "/Users/alex.liu/Downloads/Work/Log/Test";
     public static void main(String[] args) {
         final File src = new File(SRC_PATH);
         final File dest = new File(DEST_PATH);
         getRunnable(src, dest).run();
         System.out.println("Main Thread end!!!");
-
     }
 
     public static Runnable getRunnable(final File src, final File dest) {
         return () -> {
-            ITask task = CopyService.createTask(src, dest, 4,
+            ITask task = CopyService.createTask(src, dest, 0,
                     new IListener() {
                         @Override
                         public void onStart() {
@@ -61,15 +61,15 @@ public class Main {
             System.out.println("End get task load: Total time: " + (mCompleteTime - mStartTime) + " \tTask Load: " + taskLoad);
             task.execute();
 
-            try {
+            /*try {
                 System.out.println("Wait to cancel!!");
-                Thread.sleep(10);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             System.out.println("Start Cancel");
             task.cancel();
-            System.out.println("End cancel!!");
+            System.out.println("End cancel!!");*/
         };
     }
 }

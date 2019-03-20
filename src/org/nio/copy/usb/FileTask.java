@@ -8,11 +8,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-final class FileCopyTask extends Task {
+final class FileTask extends Task {
     private File mSource;
     private File mTarget;
     private File mTemp;
-    public FileCopyTask(ParentTask parent, File source, File dest) {
+    public FileTask(ParentTask parent, File source, File dest) {
         this(parent, source, dest, false);
     }
 
@@ -22,13 +22,13 @@ final class FileCopyTask extends Task {
      * @param dest
      * @param protect if is true, define a temp file to execute this task.
      */
-    public FileCopyTask(ParentTask parent, File source, File dest, boolean protect) {
+    public FileTask(ParentTask parent, File source, File dest, boolean protect) {
         super(parent);
         init(source, dest, protect);
     }
 
     @Override
-    public String getName() {
+    public String toString() {
         return mSource.getName();
     }
 
@@ -60,7 +60,6 @@ final class FileCopyTask extends Task {
     protected int onExecute() {
         int resultFlag;
         try {
-            notifyNewProgress(0);
             Path fromPath = Paths.get(mSource.toURI());
             Path toPath;
             if (mTemp != null) {

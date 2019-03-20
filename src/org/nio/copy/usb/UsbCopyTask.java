@@ -2,7 +2,7 @@ package org.nio.copy.usb;
 
 import java.io.File;
 
-class UsbCopyTask extends DirCopyTask {
+class UsbCopyTask extends FileTaskGroup {
 
     private IListener mListener;
 

@@ -1,6 +1,5 @@
 package org.nio.copy.usb;
 
-import java.util.Map;
 import java.util.concurrent.*;
 
 
@@ -10,7 +9,6 @@ class TaskSchedule {
     private  ThreadPoolExecutor mThreadPool;
     private static int MAX_THREAD_SIZE = 16;
     private static int CORE_THREAD_SIZE = 8;
-    private  Map<String, Runnable> mExecuteMap = new ConcurrentHashMap<>();
 
     public TaskSchedule(int desireThreadSize) {
         if (desireThreadSize < 0) {
@@ -25,18 +23,12 @@ class TaskSchedule {
     }
 
     public  void execute(final ITask task) {
-        Runnable runnable = () -> {
-            mExecuteMap.remove(task.getName());
-            task.execute();
-        };
-        mExecuteMap.put(task.getName(), runnable);
-        mThreadPool.execute(runnable);
+        mThreadPool.execute(task);
     }
 
 
     public void cancel() {
         mWorkQueue.clear();
-        mExecuteMap.clear();
     }
 
     public  void shutdown() {

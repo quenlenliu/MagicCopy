@@ -15,28 +15,42 @@ abstract class Task implements ITask{
         mParent = parent;
     }
 
+    protected int getState() {
+        return mState;
+    }
+
     @Override
-    public void setState(int state) {
+    public synchronized void setState(int state) {
+        if (mState == state) {
+            return;
+        }
         mState = state;
+        switch (state) {
+            case FLAG_STATE_EXECUTING:
+                onStartExecute();
+                break;
+            case FLAG_STATE_CANCEL:
+            case FLAG_STATE_ERROR:
+            case FLAG_STATE_COMPLETE:
+                onCompleteExecute(state);
+                break;
+        }
+    }
+
+    @Override
+    public final void run() {
+        execute();
     }
 
     public void execute() {
         if (!isCancel()) {
             setState(FLAG_STATE_EXECUTING);
-            onStartExecute();
-            int flag = onExecute();
-            if (flag == FLAG_STATE_COMPLETE) {
-                onCompleteExecute(FLAG_STATE_COMPLETE);
-            } else if (flag == FLAG_STATE_ERROR) {
-                onCompleteExecute(FLAG_STATE_ERROR);
-            }
-        } else {
-            onCompleteExecute(FLAG_STATE_CANCEL);
+            setState(onExecute());
         }
     }
 
     public String getName() {
-        return toString();
+        return mParent == null ? toString() : mParent.getName() + " -> " + toString();
     }
 
     /**
@@ -70,7 +84,6 @@ abstract class Task implements ITask{
 
 
     protected void onCompleteExecute(@FlagState int state) {
-        setState(state);
         final ParentTask parentTask = getParent();
         if (parentTask != null) {
             parentTask.onChildTaskComplete(this, state);
@@ -84,6 +97,11 @@ abstract class Task implements ITask{
 
     private long mCurrentProgress;
     private Object mLock = new Object();
+
+    void ignoreRemainingTask() {
+        notifyNewProgress(getTaskLoad() - mCurrentProgress);
+    }
+
     protected void notifyNewProgress(long progress) {
         synchronized (mLock) {
             if (progress != 0) { // First time and progress changed, send notify.
@@ -129,20 +147,27 @@ abstract class Task implements ITask{
         return mState == FLAG_STATE_CANCEL;
     }
 
-    public void cancel() {
-        if (mState == FLAG_STATE_CANCEL) {
-            throw new RuntimeException("Task has been canceled, can cancel again!!!");
-        }
 
-        if (getChildren() != null) {
-            for (ITask task: getChildren()) {
+
+    protected final void cancelChildren() {
+        if (FLAG_STATE_CANCEL == getState()) {
+            // if this task is cancel. don't cancel child again. because child must be canceled;
+            return;
+        }
+        final List<ITask> children = getChildren();
+        if (children != null) {
+            for (ITask task: children) {
                 task.cancel();
             }
         }
+    }
 
-        onCanceled();
-        if (mState != FLAG_STATE_COMPLETE && mState != FLAG_STATE_ERROR) {
-            onCompleteExecute(FLAG_STATE_CANCEL);
+    public void cancel() {
+        if (mState == FLAG_STATE_CANCEL) {
+            throw new RuntimeException("Task(" + getName() + ") has  been canceled, can't cancel again!!!");
         }
+        cancelChildren();
+        setState(FLAG_STATE_CANCEL);
+        onCanceled();
     }
 }

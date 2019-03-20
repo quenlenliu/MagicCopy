@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
 
-public interface ITask {
+public interface ITask extends Runnable{
     int FLAG_STATE_ERROR = -1;
     int FLAG_STATE_COMPLETE = 3;
     int FLAG_STATE_CANCEL = 1;
