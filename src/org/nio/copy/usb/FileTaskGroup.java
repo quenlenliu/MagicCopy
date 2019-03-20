@@ -25,8 +25,8 @@ class FileTaskGroup extends Task implements ParentTask{
     }
 
     @Override
-    public final void onChildTaskUpdateProgress(Task child, long progress) {
-        notifyNewProgress(progress);
+    public final void onChildTaskUpdateProgress(Task child, long increase, long cur, long total) {
+        notifyNewProgress(increase);
     }
 
     @Override
@@ -78,6 +78,10 @@ class FileTaskGroup extends Task implements ParentTask{
         }
     }
 
+    @Override
+    protected void onCompleteExecute(int state) {
+        super.onCompleteExecute(state);
+    }
 
     @Override
     public int getExecuteMode() {

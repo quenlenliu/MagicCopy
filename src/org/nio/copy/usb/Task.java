@@ -102,14 +102,14 @@ abstract class Task implements ITask{
         notifyNewProgress(getTaskLoad() - mCurrentProgress);
     }
 
-    protected void notifyNewProgress(long progress) {
-        synchronized (mLock) {
-            if (progress != 0) { // First time and progress changed, send notify.
+    protected void notifyNewProgress(long increase) {
+        if (increase > 0) { // First time and progress changed, send notify.
+            synchronized (mLock) {
+                mCurrentProgress += increase;
                 final ParentTask parentTask = getParent();
                 if (parentTask != null) {
-                    parentTask.onChildTaskUpdateProgress(this, progress);
+                    parentTask.onChildTaskUpdateProgress(this, increase, mCurrentProgress, getTaskLoad());
                 }
-                mCurrentProgress += progress;
                 updateProgress(mCurrentProgress, getTaskLoad());
             }
         }
