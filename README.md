@@ -24,35 +24,35 @@ and then add the dependence.
 Fow now your can use this library.
 
 ```
-        File src = new File("your src file");
-        File dest = new File("your dest file");
-        final int desireThread = 4; // Your desire running thread. we limit it to 0 < desireThread <= availableProcessors
-        CopyService.createTask(src, dest, desireThread, new IListener() {
-            @Override
-            public void onStart() {
-                // Task start running
-            }
+File src = new File("your src file");
+File dest = new File("your dest file");
+final int desireThread = 4; // Your desire running thread. we limit it to 0 < desireThread <= availableProcessors
+CopyService.createTask(src, dest, desireThread, new IListener() {
+    @Override
+    public void onStart() {
+	// Task start running
+    }
 
-            @Override
-            public void onComplete() {
-                // Task running complete success.
-            }
+    @Override
+    public void onComplete() {
+	// Task running complete success.
+    }
 
-            @Override
-            public void onError() {
-                // Something error, if find error, will stop all child task.
-            }
+    @Override
+    public void onError() {
+	// Something error, if find error, will stop all child task.
+    }
 
-            @Override
-            public void onCancel() {
-                // Cancel, if your call task.cancel()
-            }
+    @Override
+    public void onCancel() {
+	// Cancel, if your call task.cancel()
+    }
 
-            @Override
-            public void onProgress(long cur, long total) {
-                // the progress.
-            }
-        }).execute();
+    @Override
+    public void onProgress(long cur, long total) {
+	// the progress.
+    }
+}).execute();
 ```
 
 If you want use the jar direct. you can download from  this website
