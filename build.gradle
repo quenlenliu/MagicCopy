@@ -33,10 +33,10 @@ allprojects {
     apply plugin: 'java'
 }
 
-def magicGroup = 'org.quenlen.magic.copy'
+def magicGroup = 'org.quenlen.magic'
 def magicVersion = '1.0'
 def magicRepo = 'Magic'
-def magicName = 'MagicCopy'
+def magicName = 'magic-copy'
 def siteUrl = 'https://github.com/quenlenliu/MagicCopy'
 def gitUrl = 'https://github.com/quenlenliu/MagicCopy.git'
 def vcsVersion = 'v' + magicVersion
