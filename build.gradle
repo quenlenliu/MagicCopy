@@ -33,10 +33,10 @@ allprojects {
     apply plugin: 'java'
 }
 
-def magicGroup = "org.quenlen.magic"
-def magicVersion = "1.0"
-def magicRepo = "Magic"
-def magicName = "MagicCopy"
+def magicGroup = 'org.quenlen.magic.copy'
+def magicVersion = '1.0'
+def magicRepo = 'Magic'
+def magicName = 'MagicCopy'
 def siteUrl = 'https://github.com/quenlenliu/MagicCopy'
 def gitUrl = 'https://github.com/quenlenliu/MagicCopy.git'
 def vcsVersion = 'v' + magicVersion
@@ -70,6 +70,7 @@ bintray {
         issueTrackerUrl = 'https://github.com/quenlenliu/MagicCopy/issues'
         labels = ['java', 'file', 'copy']
         setWebsiteUrl(siteUrl)
+        attributes= ['a': ['ay1', 'ay2'], 'b': ['bee'], c: 'cee'] //Optional package-level attributes
         version {
             name = magicVersion
             desc = 'MagicCopy'
@@ -77,6 +78,10 @@ bintray {
             attributes = ['gradle-plugin': 'com.use.less:com.use.less.gradle:gradle-useless-plugin']
         }
     }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
 }
 
 

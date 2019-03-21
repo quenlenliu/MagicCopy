@@ -15,12 +15,11 @@ class TaskSchedule {
 
     public TaskSchedule(int desireThreadSize) {
         if (desireThreadSize < 0) {
-            throw new IllegalArgumentException("Desire thread size can't less than zero");
+            desireThreadSize = 0;
         }
         MAX_THREAD_SIZE =  Runtime.getRuntime().availableProcessors();
         CORE_THREAD_SIZE = desireThreadSize > MAX_THREAD_SIZE ? MAX_THREAD_SIZE : desireThreadSize;
         System.out.println("Core Thread Size: " + CORE_THREAD_SIZE);
-        //CORE_THREAD_SIZE = 0;
         mThreadPool = new ThreadPoolExecutor(CORE_THREAD_SIZE, MAX_THREAD_SIZE, 20L, TimeUnit.SECONDS, mWorkQueue);
         mThreadPool.allowCoreThreadTimeOut(true);
     }

@@ -19,7 +19,6 @@ abstract class Task implements ITask{
         return mState;
     }
 
-    @Override
     public synchronized void setState(int state) {
         if (mState == state) {
             return;

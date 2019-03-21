@@ -26,10 +26,19 @@ public interface ITask extends Runnable{
 
     /**
      * Get the task load. include the children task.
-     * @return
+     * @return task load.
      */
     long getTaskLoad();
+
+    /**
+     * Get parent task.
+     * @return this task parent.
+     */
     ParentTask getParent();
+
+    /**
+     * Get children task, it has not child task, get null
+     * @return null or children task list.
+     */
     List<ITask> getChildren();
-    void setState(@FlagState int state);
 }
